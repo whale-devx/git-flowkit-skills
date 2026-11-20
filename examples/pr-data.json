@@ -1,0 +1,9 @@
+{
+  "summary": "Add reusable Git workflow templates.",
+  "motivation": "Keep repository policy consistent across coding agents.",
+  "changes": "- Add configurable PR and merge templates.\n- Preserve existing repository files.",
+  "validation": "Not run. Replace this example with actual commands and results.",
+  "risks": "Review template precedence before adopting in an existing repository.",
+  "release_impact": "Feature; advisory MINOR impact. Verify with the configured release engine.",
+  "issues": "None."
+}

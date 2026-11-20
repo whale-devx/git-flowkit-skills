@@ -1,0 +1,28 @@
+name: Bug report
+description: Report a reproducible Git FlowKit failure.
+title: 'bug: '
+body:
+  - type: markdown
+    attributes:
+      value: Do not paste credentials, private repository contents, or security exploit details.
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Agent and version, OS, Python, Git, skill revision, and release engine.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Include a minimal public fixture or sanitized commands.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and actual behavior
+      description: Include exact output and whether the command was preview or apply.
+    validations:
+      required: true

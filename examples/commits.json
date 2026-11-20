@@ -1,0 +1,4 @@
+[
+  "fix(parser): preserve breaking change footers",
+  "feat(templates): add configurable PR descriptions"
+]
