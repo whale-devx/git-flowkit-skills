@@ -53,6 +53,10 @@ Release Please เป็นเจ้าของเวอร์ชันจร�
 การคำนวณ Monorepo, การยกเลิกผลของ Revert และการเลื่อน Prerelease เดิมให้ใช้ Native
 Release Engine ส่วน CLI จะหยุดแทนการรายงานตัวเลขที่ไม่น่าเชื่อถือ
 
+เมื่อเตรียม Release Please จาก feature branch ให้ดึงประวัติ Git ทั้งหมด แท็ก และสาขาที่จะออก
+release ก่อนรัน `release-setup --branch <ชื่อสาขา>` คำสั่งใช้ commit ล่าสุดของสาขานั้นเป็นจุดเริ่มนับ
+และส่งชื่อสาขาเดียวกันให้ Release Please จึงใช้กับ PR ที่ merge แบบ squash ได้
+
 สำหรับ Repository นี้ ต้อง Merge งานตั้งค่าและตรวจ CI ก่อน แล้วให้ Maintainer ตั้ง
 Repository Variable `FLOWKIT_RELEASE_ENABLED=true` จึงจะเริ่ม Automation ได้
 รีโปกำหนดให้รุ่นแรกที่เข้าเกณฑ์ตามปกติเป็น `0.1.0` ส่วนรุ่นถัดไปคำนวณจากรุ่นก่อนหน้าและนโยบาย Commit ของโปรเจกต์

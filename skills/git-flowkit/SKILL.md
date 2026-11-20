@@ -106,7 +106,9 @@ These cases need the authoritative native engine, not a guessed number. It can p
 a first `alpha`, `beta`, or `rc` from a stable version using `--prerelease`.
 
 `release-setup` previews a review-gated Release Please scaffold for a new, tagless,
-single-package repository. It refuses existing engines, custom release rules it cannot
+single-package repository. Fetch full history, tags and the intended release branch
+before setup. `--branch` selects its bootstrap commit and Release Please target.
+It refuses existing engines, custom release rules it cannot
 translate, and inconsistent versions. It does not enable GitHub settings or secrets.
 Other engines are detected and adopted using [releases.md](references/releases.md);
 the helper does not claim to implement their execution or dependency graph logic.

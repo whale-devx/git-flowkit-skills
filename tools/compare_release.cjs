@@ -33,7 +33,7 @@ const cases = [
   { name: 'no later commits', previous: '0.1.0', messages: [], native: null, preview: null },
 ];
 
-async function nativePlan(dir, previous, messages) {
+async function nativePlan(dir, previous, messages, history) {
   const config = readJson(dir, configFile);
   const initialManifest = previous ? { '.': previous } : readJson(dir, manifestFile);
   // Supply only read operations. The planner cannot create a PR, tag or release.
@@ -49,6 +49,10 @@ async function nativePlan(dir, previous, messages) {
     },
     async *tagIterator() {},
     async *mergeCommitIterator() {
+      if (history) {
+        yield* history;
+        return;
+      }
       for (const [i, message] of messages.entries()) {
         yield { sha: (i + 3).toString(16).padStart(40, '0'), message, files: ['example.txt'] };
       }
@@ -69,9 +73,47 @@ async function nativePlan(dir, previous, messages) {
   const manifestContent = updates.get(manifestFile).updateContent(JSON.stringify(initialManifest));
   assert.equal(JSON.parse(manifestContent)['.'], version);
   const notes = updates.get('CHANGELOG.md').updateContent(fs.readFileSync(path.join(dir, 'CHANGELOG.md'), 'utf8'));
-  assert.ok(notes.includes(version) && notes.includes(messages[0].split(': ')[1]));
+  assert.ok(notes.includes(version));
+  assert.ok(!notes.includes('excluded boundary'));
+  if (messages.length) assert.ok(notes.includes(messages[0].split(': ')[1]));
   assert.ok(!plan.body.toString().includes('excluded boundary'));
   return version;
+}
+
+async function checkSquashBootstrap(tempDir) {
+  const dir = path.join(tempDir, 'squash');
+  fs.mkdirSync(dir);
+  function git(...args) {
+    return execFileSync('git', ['-C', dir, '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid',
+      '-c', 'core.hooksPath=', '-c', 'commit.gpgsign=false', ...args], { encoding: 'utf8' }).trim();
+  }
+  function commitsOnMain() {
+    return git('log', 'main', '--format=%H%x00%s').split('\n').map(line => {
+      const [sha, message] = line.trim().split('\0');
+      const changes = git('diff-tree', '--root', '--no-commit-id', '-r', '--name-only', sha);
+      return { sha, message, files: changes ? changes.split(/\r?\n/) : [] };
+    });
+  }
+  git('init', '-q', '-b', 'main');
+  fs.writeFileSync(path.join(dir, 'project.txt'), 'initial feature\n');
+  git('add', 'project.txt');
+  git('commit', '-qm', 'feat: excluded boundary');
+  git('commit', '--allow-empty', '-qm', 'docs: describe initial feature');
+  git('switch', '-q', '-c', 'chore/setup');
+  git('commit', '--allow-empty', '-qm', 'chore: prepare release tooling');
+  flowkit(dir, 'release-setup', '--apply');
+  git('add', '.');
+  git('commit', '-qm', 'chore: add release configuration');
+  git('switch', '-q', 'main');
+  git('merge', '--squash', 'chore/setup');
+  git('commit', '-qm', 'chore: configure release tooling');
+  const before = await nativePlan(dir, null, [], commitsOnMain());
+  assert.equal(before, null, 'squashed setup should exclude historical features, got ' + before);
+  fs.appendFileSync(path.join(dir, 'project.txt'), 'team rules\n');
+  git('commit', '-qam', feature);
+  const after = await nativePlan(dir, null, [feature], commitsOnMain());
+  assert.equal(after, '1.0.0');
+  console.log('squash setup: native=' + before + ', after feature=' + after);
 }
 
 async function checkScaffold(tempDir) {
@@ -98,6 +140,7 @@ async function checkScaffold(tempDir) {
     assert.equal(native, test.expected, test.name);
     console.log(test.name + ': native=' + native);
   }
+  await checkSquashBootstrap(tempDir);
 }
 
 async function main() {

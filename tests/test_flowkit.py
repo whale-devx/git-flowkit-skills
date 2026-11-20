@@ -30,7 +30,8 @@ class RepositoryCase(unittest.TestCase):
         core.git(self.root, "config", "user.name", "FlowKit Test")
         core.git(self.root, "config", "user.email", "test@example.invalid")
         core.git(self.root, "config", "commit.gpgsign", "false")
-        core.git(self.root, "-c", "core.hooksPath=", "commit", "--allow-empty", "-m", "chore: initialize")
+        core.git(self.root, "config", "core.hooksPath", "")
+        core.git(self.root, "commit", "--allow-empty", "-m", "chore: initialize")
         self.config, self.layers = core.load_config(self.root)
 
     def write(self, path, content):
@@ -270,6 +271,55 @@ class RepositoryCase(unittest.TestCase):
         result = self.cli("release-setup")
         self.assertEqual(result.returncode, 2)
         self.assertIn("disagrees", result.stderr)
+
+    def test_release_setup_uses_named_branch_from_feature_checkout(self):
+        core.git(self.root, "branch", "release/stable")
+        base = core.git(self.root, "rev-parse", "release/stable").stdout.strip()
+        core.git(self.root, "switch", "-c", "chore/bootstrap")
+        core.git(self.root, "commit", "--allow-empty", "-m", "fix: local preparation")
+        result = self.cli("release-setup", "--branch", "release/stable", "--apply")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(core.load_json(self.root / "release-please-config.json")["bootstrap-sha"], base)
+        workflow = core.read_text(self.root / ".github/workflows/git-flowkit-release.yml")
+        self.assertIn('branches: ["release/stable"]', workflow)
+        self.assertIn("github.ref == 'refs/heads/release/stable'", workflow)
+        self.assertIn('target-branch: "release/stable"', workflow)
+
+    def test_release_setup_can_use_origin_tracking_branch(self):
+        core.git(self.root, "update-ref", "refs/remotes/origin/release/stable", "HEAD")
+        base = core.git(self.root, "rev-parse", "HEAD").stdout.strip()
+        core.git(self.root, "commit", "--allow-empty", "-m", "fix: local preparation")
+        result = self.cli("release-setup", "--branch", "release/stable", "--apply")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(core.load_json(self.root / "release-please-config.json")["bootstrap-sha"], base)
+
+    def test_release_setup_refuses_unknown_target_without_writing(self):
+        # A similarly named remote-tracking branch must not satisfy the target lookup.
+        core.git(self.root, "update-ref", "refs/remotes/origin/stable/older", "HEAD")
+        result = self.cli("release-setup", "--branch", "stable", "--apply")
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertIn("stable", result.stderr)
+        self.assertEqual(core.git(self.root, "status", "--porcelain").stdout, "")
+
+    def test_release_setup_refuses_shallow_clone_with_hidden_tag(self):
+        core.git(self.root, "tag", "v1.0.0")
+        core.git(self.root, "commit", "--allow-empty", "-m", "docs: update guide")
+        with tempfile.TemporaryDirectory() as clone:
+            core.git(Path(clone), "clone", "--depth=1", self.root.as_uri(), ".")
+            self.assertEqual(core.git(Path(clone), "tag", "--list").stdout, "")
+            result = subprocess.run([sys.executable, str(SCRIPTS / "flowkit.py"), "--repo", clone,
+                                     "release-setup", "--apply"], capture_output=True, text=True)
+            self.assertEqual(result.returncode, 2, result.stderr)
+            self.assertIn("Shallow", result.stderr)
+            self.assertEqual(core.git(Path(clone), "status", "--porcelain").stdout, "")
+
+    def test_release_setup_refuses_conflicting_release_tips(self):
+        core.git(self.root, "update-ref", "refs/remotes/origin/main", "HEAD")
+        core.git(self.root, "commit", "--allow-empty", "-m", "fix: unpublished work")
+        result = self.cli("release-setup", "--apply")
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertIn("origin/main differ", result.stderr)
+        self.assertEqual(core.git(self.root, "status", "--porcelain").stdout, "")
 
     def test_release_setup_seed_is_a_stable_manifest_baseline(self):
         result = self.cli("release-setup", "--initial-version", "1.4.2-rc.1", "--apply")

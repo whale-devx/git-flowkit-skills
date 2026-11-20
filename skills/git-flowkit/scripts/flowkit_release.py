@@ -88,9 +88,31 @@ def release_plan(current: str, messages: list[Any], config: dict[str, Any], prer
                             "Only local tags are checked; recheck the remote before publishing."]}
 
 
-def history(root: Path, since: str) -> list[dict[str, str]]:
+def require_full_history(root: Path) -> None:
     if git(root, "rev-parse", "--is-shallow-repository").stdout.strip() == "true":
         raise FlowkitError("Shallow history cannot be used for release planning; fetch full history explicitly")
+
+
+def bootstrap_sha(root: Path, branch: str) -> str:
+    require_full_history(root)
+    if git(root, "tag", "--list").stdout.strip():
+        raise FlowkitError("Existing tags require explicit release migration; automatic bootstrap is unsafe")
+    refs = (f"refs/heads/{branch}", f"refs/remotes/origin/{branch}")
+    listing = git(root, "for-each-ref", "--format=%(refname) %(objectname)", *refs).stdout
+    tips = set()
+    for line in listing.splitlines():
+        ref, sha = line.split()
+        if ref in refs:
+            tips.add(sha)
+    if not tips:
+        raise FlowkitError(f"Release branch {branch} is missing locally. Fetch the target branch and tags before setup.")
+    if len(tips) > 1:
+        raise FlowkitError(f"Local {branch} and origin/{branch} differ. Reconcile the release branch before setup.")
+    return tips.pop()
+
+
+def history(root: Path, since: str) -> list[dict[str, str]]:
+    require_full_history(root)
     base = git(root, "rev-parse", "--verify", "--end-of-options", since + "^{commit}").stdout.strip()
     head = git(root, "rev-parse", "--verify", "HEAD").stdout.strip()
     if git(root, "merge-base", "--is-ancestor", base, head, check=False).returncode:

@@ -30,8 +30,16 @@ python <skill>/scripts/flowkit.py --repo <repo> release-setup --apply
 This creates a `simple` strategy config, manifest, version.txt, changelog, and an opt-in
 GitHub Actions workflow. It refuses existing engines or tags, recognized workspaces,
 inconsistent version.txt, and custom rules/tag prefixes it cannot safely translate.
-It never overwrites existing files. Bootstrap starts after the current HEAD; only
-subsequent conventional changes are included. Review this boundary for existing code.
+Setup reads local Git history. Fetch full history, tags and the release branch before
+running it in a clone. `--branch` defaults to `main`. Its tip sets the bootstrap
+boundary, push trigger and Release Please target. You can prepare the files on a
+feature branch and squash the setup PR. Older features on the release branch stay
+outside the first release plan.
+
+The branch must exist locally or as `origin/<branch>`. When both refs exist they
+must agree. For a differently named remote, create or update the local release
+branch from the intended remote before setup. Shallow history, a missing branch
+or conflicting tips stop both preview and apply before any files are written.
 `--initial-version` writes the baseline to `.release-please-manifest.json` and
 `version.txt`. Choose the starting point before applying the scaffold.
 

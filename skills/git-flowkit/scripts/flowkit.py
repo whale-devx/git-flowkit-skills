@@ -11,7 +11,7 @@ from flowkit_core import (ASSETS, CONFIG_NAME, KINDS, FlowkitError, check_branch
                           git, global_path, is_workspace, json_text, load_config, load_json, make_branch,
                           native_templates, read_text, render, repository, scaffold,
                           selected_engine, template_path)
-from flowkit_release import (check_tag, history, merge_readiness, parse_commit, parse_version, release_plan)
+from flowkit_release import (bootstrap_sha, check_tag, history, merge_readiness, parse_commit, parse_version, release_plan)
 
 
 def parser() -> argparse.ArgumentParser:
@@ -44,7 +44,7 @@ def parser() -> argparse.ArgumentParser:
     preview.add_argument("--prerelease", choices=("alpha", "beta", "rc"))
     setup = commands.add_parser("release-setup", help="Scaffold opt-in Release Please; never overwrite native engines")
     setup.add_argument("--apply", action="store_true")
-    setup.add_argument("--branch", default="main")
+    setup.add_argument("--branch", default="main", help="Release branch used for the bootstrap boundary and workflow trigger")
     setup.add_argument("--initial-version", default="0.0.0",
                        help="Manifest and version.txt baseline (default: 0.0.0). To choose the first release "
                             "from zero, set initial-version in the generated Release Please package config.")
@@ -77,9 +77,7 @@ def setup_release(root: Path, args: argparse.Namespace, config: dict) -> list[di
         raise FlowkitError("Existing version.txt disagrees with --initial-version; reconcile before setup")
     if not all(c.isalnum() or c in "/_-" for c in args.branch) or git(root, "check-ref-format", "--branch", args.branch, check=False).returncode:
         raise FlowkitError("Use a valid plain branch name without workflow glob characters")
-    if git(root, "tag", "--list").stdout.strip():
-        raise FlowkitError("Existing tags require explicit release migration; automatic bootstrap is unsafe")
-    base = git(root, "rev-parse", "--verify", "HEAD").stdout.strip()
+    base = bootstrap_sha(root, args.branch)
     # This adapter owns standard v-prefixed tags and these default release rules only.
     expected = {"feat": "minor", "fix": "patch", "perf": "patch"}
     if config["release"]["tag_prefix"] != "v" or config["release"]["rules"] != expected:
