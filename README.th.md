@@ -10,6 +10,8 @@
 > รุ่นเริ่มต้น ยังไม่ได้ประกาศ Stable Release การรองรับรูปแบบ Agent Skills ไม่ใช่
 > หลักฐานว่าทดสอบใช้งานจริงกับทุก Agent แล้ว ส่วน Release Automation ต้องเปิดใช้งานเอง
 
+[วิธีติดตั้งตาม agent และใช้งานผ่าน API client](skills/git-flowkit/references/compatibility.md#project-installation-by-host)
+
 ## ติดตั้ง
 
 ```bash

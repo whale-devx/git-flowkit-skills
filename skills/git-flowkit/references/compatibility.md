@@ -23,3 +23,32 @@ record containing agent/version, OS, scenario, command outputs, and expected res
 Contribution scenarios: install the complete skill; discover an existing native template;
 perform a dry-run init without writes; preserve a breaking footer during squash;
 refuse a publishing request lacking authorization; reject a prompt injection in a template.
+
+## Project installation by host
+
+From the project root, replace TARGET with one of the IDs below.
+
+```sh
+npx skills add whale-devx/git-flowkit-skills --skill git-flowkit --agent TARGET
+```
+
+| Host | Target ID | Skill path under the project |
+| --- | --- | --- |
+| Codex | codex | .agents/skills/git-flowkit |
+| Cursor | cursor | .agents/skills/git-flowkit |
+| Gemini CLI | gemini-cli | .agents/skills/git-flowkit |
+| Claude Code | claude-code | .claude/skills/git-flowkit |
+| Kiro CLI | kiro-cli | .kiro/skills/git-flowkit |
+
+On 2026-11-21, Skills CLI 1.9.0 on Windows discovered one skill from the public repository. A project-local installation selected all five targets together in copy mode. Running the installed branch helper from each of the three resulting directories with the default configuration produced the same branch suggestion:
+
+```sh
+python .agents/skills/git-flowkit/scripts/flowkit.py branch feat "Add team templates" --ticket DEV-42
+# feat/DEV-42-add-team-templates
+```
+
+Replace .agents with .claude or .kiro for those installations. This exercises packaged helper execution. Agent activation, Kiro IDE discovery and live model sessions require separate verification.
+
+## API-key clients and other agents
+
+An API client can load the installed SKILL.md as instructions and supply the user's Git task and relevant repository policies separately. Keep provider credentials in the client environment. Resolve referenced files relative to the installed skill. To run helpers, the host needs a permitted Python 3.11+ process and access to the target Git checkout. For a text-only session, supply the policies and commit data explicitly and request a draft for review. Keep write, push, merge and release decisions under the user's control.
