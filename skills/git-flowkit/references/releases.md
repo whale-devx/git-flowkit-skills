@@ -32,7 +32,10 @@ GitHub Actions workflow. It refuses existing engines or tags, recognized workspa
 inconsistent version.txt, and custom rules/tag prefixes it cannot safely translate.
 It never overwrites existing files. Bootstrap starts after the current HEAD; only
 subsequent conventional changes are included. Review this boundary for existing code.
-`--initial-version` is the baseline, not a promise to publish that exact version.
+`--initial-version` sets the scaffold's manifest baseline. Release Please's
+package setting `initial-version` controls the first ordinary candidate when the
+manifest starts at `0.0.0` and no release or tag exists. Review that native
+setting before activating a generated workflow.
 
 The generic scaffold cannot know the target project's test commands. Before enabling,
 connect the project's required tests and protections. The scaffold is not evidence that
@@ -41,12 +44,17 @@ application tests have passed. Use the repo's existing engine for a migration or
 ## This repository's release activation
 
 The repository starts at **0.0.0, unreleased**. Its manifest uses the inspected initial
-commit as the bootstrap boundary. With the current feature implementation and pre-1.0
-policy, the intended first normal release is 0.1.0; the engine computes the actual result.
+commit as the bootstrap boundary. The root package explicitly sets its native
+`initial-version` to `0.1.0`. With a tagless `0.0.0` manifest, Release
+Please 17.6.0 otherwise proposed `1.0.0` for a feature in an offline comparison.
+A docs-only fixture produced no candidate. After an existing `0.1.0` release,
+a fix proposed `0.1.1`. The advisory helper still computes from its supplied
+baseline, so a fix against `0.0.0` yields `0.0.1` in the helper.
 
 1. PR #1 merged with a merge commit. After bootstrap `c35420a`, the retained non-merge
    commits include feature `724bb8b` and fix `2a252fa`. Inspect the native release PR
-   against this history before approving a version. Native output remains unverified.
+   against this history before approving a version. The native fixture uses
+   simulated GitHub history. A hosted release rehearsal remains outstanding.
 2. Verify the six OS/Python test jobs, installation job and policy job. Configure required checks and
    review protection on the default branch; these settings are not changed by this PR.
 3. Permit Actions to create pull requests where repository/organization policy requires it.

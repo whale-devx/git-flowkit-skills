@@ -55,6 +55,7 @@ Release Engine ส่วน CLI จะหยุดแทนการรายง
 
 สำหรับ Repository นี้ ต้อง Merge งานตั้งค่าและตรวจ CI ก่อน แล้วให้ Maintainer ตั้ง
 Repository Variable `FLOWKIT_RELEASE_ENABLED=true` จึงจะเริ่ม Automation ได้
+รีโปกำหนดให้รุ่นแรกที่เข้าเกณฑ์ตามปกติเป็น `0.1.0` ส่วนรุ่นถัดไปคำนวณจากรุ่นก่อนหน้าและนโยบาย Commit ของโปรเจกต์
 ยังไม่มีการ Publish npm/PyPI ดูขั้นตอนและข้อจำกัด Token ใน
 [Release guide](skills/git-flowkit/references/releases.md)
 

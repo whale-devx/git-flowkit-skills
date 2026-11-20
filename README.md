@@ -109,6 +109,8 @@ flowchart LR
 The agent prepares and checks. Repository protections and the native release engine
 remain authoritative. For this repository, CI can create Release Please PRs and releases
 only after a maintainer explicitly sets `FLOWKIT_RELEASE_ENABLED=true`.
+The first ordinary release candidate is configured as `0.1.0`. Subsequent
+candidates use the previous release and the project's commit policy.
 It does not publish to npm or PyPI. See the [activation checklist](skills/git-flowkit/references/releases.md).
 
 ## Safety and verification
