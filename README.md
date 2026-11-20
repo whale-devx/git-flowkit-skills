@@ -55,7 +55,7 @@ From a clone of this repository, with Python 3.11+ and Git:
 python skills/git-flowkit/scripts/flowkit.py doctor
 python skills/git-flowkit/scripts/flowkit.py branch feat "Add team templates" --ticket DEV-42
 python skills/git-flowkit/scripts/flowkit.py check-commit --message "feat(templates): add team templates"
-python skills/git-flowkit/scripts/flowkit.py render pr --data examples/pr-data.json
+python skills/git-flowkit/scripts/flowkit.py render pr --data examples/pr-data.json --template skills/git-flowkit/assets/templates/pr.md
 python skills/git-flowkit/scripts/flowkit.py release-preview --current 1.4.2 --commits examples/commits.json
 ```
 

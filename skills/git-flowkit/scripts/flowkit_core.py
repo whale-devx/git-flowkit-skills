@@ -161,7 +161,14 @@ def native_templates(root: Path, kind: str) -> list[Path]:
         paths = [root / name for name in names]
         for folder in (".github/PULL_REQUEST_TEMPLATE", ".github/pull_request_template", ".gitlab/merge_request_templates"):
             paths.extend(sorted((root / folder).glob("*.md")))
-        return sorted(set(p for p in paths if p.is_file()))
+        # macOS/Windows may resolve differently-cased candidates to the same file.
+        # Compare filesystem identity, not spelling; retain the discovery order so
+        # an existing lowercase template is not replaced by an uppercase alias.
+        unique: list[Path] = []
+        for candidate in paths:
+            if candidate.is_file() and not any(candidate.samefile(existing) for existing in unique):
+                unique.append(candidate)
+        return sorted(unique)
     if kind == "commit":
         result = git(root, "config", "--get", "commit.template", check=False)
         if result.returncode == 0 and result.stdout.strip():
