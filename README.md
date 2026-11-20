@@ -12,6 +12,8 @@ them with another agent's defaults.
 > are executable and tested. Remote release automation is opt-in. Cross-agent
 > end-to-end compatibility is not yet certified; see [compatibility](skills/git-flowkit/references/compatibility.md).
 
+[Install by agent or integrate an API client](skills/git-flowkit/references/compatibility.md#project-installation-by-host)
+
 ## Install the skill
 
 ```bash
