@@ -18,6 +18,17 @@ def require(condition, message):
         raise RuntimeError(message)
 
 
+def check_installed_paths(skill, expected):
+    actual = set()
+    for path in skill.rglob("*"):
+        relative = path.relative_to(skill).as_posix()
+        require(not path.is_symlink() and path.resolve().is_relative_to(skill.resolve()),
+                f"Expected a copied package entry: {relative}")
+        if path.is_file():
+            actual.add(relative)
+    require(actual == expected, f"Installed file set differs: {sorted(actual ^ expected)}")
+
+
 def smoke(source, temp):
     install = temp / "installation"
     target = temp / "example ทดสอบ"
@@ -53,6 +64,9 @@ def smoke(source, temp):
     skill = skill_file.parent
     require(skill.resolve().is_relative_to(install), "Expected a project-local install")
     listing = run("git", "ls-tree", "-r", revision, "skills/git-flowkit", cwd=ROOT)
+    expected_paths = {item.split("\t", 1)[1].removeprefix("skills/git-flowkit/")
+                      for item in listing.splitlines()}
+    check_installed_paths(skill, expected_paths)
     for item in listing.splitlines():
         metadata, name = item.split("\t", 1)
         installed = skill / Path(name).relative_to("skills/git-flowkit")
