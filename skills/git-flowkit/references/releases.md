@@ -32,10 +32,17 @@ GitHub Actions workflow. It refuses existing engines or tags, recognized workspa
 inconsistent version.txt, and custom rules/tag prefixes it cannot safely translate.
 It never overwrites existing files. Bootstrap starts after the current HEAD; only
 subsequent conventional changes are included. Review this boundary for existing code.
-`--initial-version` sets the scaffold's manifest baseline. Release Please's
-package setting `initial-version` controls the first ordinary candidate when the
-manifest starts at `0.0.0` and no release or tag exists. Review that native
-setting before activating a generated workflow.
+`--initial-version` writes the baseline to `.release-please-manifest.json` and
+`version.txt`. Choose the starting point before applying the scaffold.
+
+| Intended start | Setup | First candidate in the tagless fixture |
+| --- | --- | --- |
+| New project using native defaults | Keep the default baseline of `0.0.0`. | A `feat:` produced `1.0.0`. A docs-only change produced no candidate. |
+| New project targeting `0.1.0` | Keep the baseline at `0.0.0`. In `release-please-config.json`, add `"initial-version": "0.1.0"` inside `packages["."]`. | A `fix:` produced `0.1.0`. |
+| Project already at `1.4.2` | Pass `--initial-version 1.4.2`. | A `fix:` produced `1.4.3`. |
+
+These examples used Release Please 17.3.0 from the generated workflow's
+pinned action. They apply to ordinary commits after the bootstrap boundary.
 
 The generic scaffold cannot know the target project's test commands. Before enabling,
 connect the project's required tests and protections. The scaffold is not evidence that

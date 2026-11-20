@@ -271,6 +271,16 @@ class RepositoryCase(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertIn("disagrees", result.stderr)
 
+    def test_release_setup_seed_is_a_stable_manifest_baseline(self):
+        result = self.cli("release-setup", "--initial-version", "1.4.2-rc.1", "--apply")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("stable version", result.stderr)
+        self.assertFalse((self.root / ".release-please-manifest.json").exists())
+        result = self.cli("release-setup", "--initial-version", "1.4.2", "--apply")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(core.load_json(self.root / ".release-please-manifest.json"), {".": "1.4.2"})
+        self.assertEqual(core.read_text(self.root / "version.txt").strip(), "1.4.2")
+
     def test_release_setup_refuses_existing_tags(self):
         core.git(self.root, "tag", "v1.0.0")
         self.assertEqual(self.cli("release-setup").returncode, 2)

@@ -45,7 +45,9 @@ def parser() -> argparse.ArgumentParser:
     setup = commands.add_parser("release-setup", help="Scaffold opt-in Release Please; never overwrite native engines")
     setup.add_argument("--apply", action="store_true")
     setup.add_argument("--branch", default="main")
-    setup.add_argument("--initial-version", default="0.0.0")
+    setup.add_argument("--initial-version", default="0.0.0",
+                       help="Manifest and version.txt baseline (default: 0.0.0). To choose the first release "
+                            "from zero, set initial-version in the generated Release Please package config.")
     commands.add_parser("merge-check").add_argument("--evidence", type=Path, required=True)
     return p
 
