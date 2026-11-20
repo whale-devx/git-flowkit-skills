@@ -68,3 +68,9 @@ Request และไม่ทำ Commit, Push, Merge, Tag หรือ Publish �
 
 อ่านขอบเขตทั้งหมดใน [README ภาษาอังกฤษ](README.md),
 [Security](SECURITY.md) และ [Roadmap](ROADMAP.md)
+
+ในสำเนา Git ของโครงการ ใช้ `python tools/install_smoke.py candidate` เพื่อทดสอบการติดตั้ง
+และเรียกตัวช่วยจากตำแหน่งที่ติดตั้งจริง หรือใช้ `python tools/install_smoke.py main` เพื่อทดสอบ
+จาก GitHub ต้องมี Node.js พร้อม npx, Python, Git และเข้าถึง npm registry ได้ การทดสอบ main
+ต้องเข้าถึง GitHub และมีคอมมิตของ main ในเครื่องด้วย ทั้งสองคำสั่งใช้โครงการชั่วคราวและแสดง
+คอมมิตกับตำแหน่งติดตั้ง หากเชื่อมต่อไม่ได้ ให้อ่านข้อผิดพลาดแล้วลองใหม่เมื่อเครือข่ายพร้อม

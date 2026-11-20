@@ -45,8 +45,19 @@ jobs:
       - run: python tools/validate_repo.py
       - if: github.event_name == 'pull_request'
         run: python tools/check_pr.py
+  installation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - run: python tools/install_smoke.py main
+      - run: python tools/install_smoke.py candidate
   release:
-    needs: [tests, policy]
+    needs: [tests, policy, installation]
     if: >-
       vars.FLOWKIT_RELEASE_ENABLED == 'true' &&
       github.ref == 'refs/heads/main' &&

@@ -136,3 +136,10 @@ and [Semantic Versioning 2.0.0](https://semver.org/).
 See [sources](skills/git-flowkit/references/sources.md) for the upstream specifications.
 
 MIT licensed. Existing license attribution is preserved.
+
+From a Git checkout, reproduce the project-local install and helper journey with
+`python tools/install_smoke.py candidate`. Use `python tools/install_smoke.py main`
+for the public source. Both need npm registry access, Node.js with npx, Python and Git.
+The main check also needs GitHub access and the main commit in the checkout.
+Each run creates a disposable project and prints the revision and installed path.
+If the installer fails, inspect its output and rerun after connectivity returns.

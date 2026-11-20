@@ -44,13 +44,15 @@ The repository starts at **0.0.0, unreleased**. Its manifest uses the inspected 
 commit as the bootstrap boundary. With the current feature implementation and pre-1.0
 policy, the intended first normal release is 0.1.0; the engine computes the actual result.
 
-1. Review and merge the implementation PR with a Conventional Commit squash title.
-2. Verify the six OS/Python test jobs and the policy job. Configure required checks and
+1. PR #1 merged with a merge commit. After bootstrap `c35420a`, the retained non-merge
+   commits include feature `724bb8b` and fix `2a252fa`. Inspect the native release PR
+   against this history before approving a version. Native output remains unverified.
+2. Verify the six OS/Python test jobs, installation job and policy job. Configure required checks and
    review protection on the default branch; these settings are not changed by this PR.
 3. Permit Actions to create pull requests where repository/organization policy requires it.
 4. Explicitly set repository variable `FLOWKIT_RELEASE_ENABLED` to `true`.
 5. Run the `CI` workflow manually on `main`, or push the next approved change to `main`.
-   The release job depends on the full test matrix and policy job.
+   The release job depends on the full test matrix, installation and policy jobs.
 6. Review the generated release PR and its CI, then merge it. Release Please creates
    the Git tag/GitHub Release. No npm/PyPI or other registry publish step is installed.
 
