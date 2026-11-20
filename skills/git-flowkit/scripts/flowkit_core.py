@@ -156,14 +156,21 @@ def repository(path: Path) -> Path:
 
 def native_templates(root: Path, kind: str) -> list[Path]:
     if kind == "pr":
-        names = [f"{prefix}{name}" for prefix in ("", ".github/", "docs/")
-                 for name in ("pull_request_template.md", "PULL_REQUEST_TEMPLATE.md")]
-        paths = [root / name for name in names]
-        for folder in (".github/PULL_REQUEST_TEMPLATE", ".github/pull_request_template", ".gitlab/merge_request_templates"):
-            paths.extend(sorted((root / folder).glob("*.md")))
+        defaults, named = [], []
+        for parent in (root, root / ".github", root / "docs"):
+            if not parent.is_dir() or not parent.resolve().is_relative_to(root.resolve()):
+                continue
+            for entry in parent.iterdir():
+                name = entry.name.lower()
+                if name in ("pull_request_template.md", "pull_request_template.txt"):
+                    defaults.append(entry)
+                elif name == "pull_request_template" and entry.is_dir():
+                    folder = safe_path(root, entry.relative_to(root).as_posix())
+                    named.extend(path for path in folder.iterdir() if path.suffix.lower() in (".md", ".txt"))
+        paths = sorted(defaults, key=lambda p: (p.name != p.name.lower(), p.name)) + sorted(named)
+        paths.extend(sorted((root / ".gitlab/merge_request_templates").glob("*.md")))
         # macOS/Windows may resolve differently-cased candidates to the same file.
-        # Compare filesystem identity, not spelling; retain the discovery order so
-        # an existing lowercase template is not replaced by an uppercase alias.
+        # Keep one path per filesystem identity, preferring a lowercase default.
         unique: list[Path] = []
         for candidate in paths:
             if candidate.is_file() and not any(candidate.samefile(existing) for existing in unique):

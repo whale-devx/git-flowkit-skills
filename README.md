@@ -76,6 +76,11 @@ python <installed-skill>/scripts/flowkit.py --repo <your-repo> init --apply
 `.git-flowkit/templates/*.md` files. Native repository templates keep precedence until
 you explicitly select another template. `init --global --apply` sets up personal defaults.
 
+For GitHub PRs, FlowKit finds `pull_request_template.md` or `.txt` in the repository root,
+`.github/` or `docs/`. It also finds named Markdown and text files directly inside a
+`PULL_REQUEST_TEMPLATE/` directory in each location. File names are case-insensitive.
+When several templates apply, pass the repository-relative path with `render pr --template`.
+
 ## Configuration is yours
 
 ```json
