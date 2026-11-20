@@ -124,6 +124,13 @@ class RepositoryCase(unittest.TestCase):
             with self.assertRaises(core.FlowkitError):
                 core.render("${summary}", data)
 
+    def test_render_crlf_template_preserves_paragraph_spacing(self):
+        (self.root / "custom.md").write_bytes(b"${summary}\r\n\r\n${validation}\r\n")
+        data = self.write("data.json", '{"summary":"Change","validation":"Not run"}')
+        result = self.cli("render", "pr", "--data", str(data), "--template", "custom.md")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "Change\n\nNot run\n")
+
     def test_template_precedence(self):
         native = self.write(".github/pull_request_template.md", "native")
         global_file = self.write("home/config.json", '{"version":1,"templates":{"pr":"global.md"}}')

@@ -27,7 +27,7 @@ def read_text(path: Path) -> str:
             data = stream.read(MAX_BYTES + 1)
         if len(data) > MAX_BYTES:
             raise FlowkitError(f"File exceeds 1 MiB: {path}")
-        return data.decode("utf-8")
+        return data.decode("utf-8").replace("\r\n", "\n")
     except (OSError, UnicodeError) as exc:
         raise FlowkitError(f"Cannot read UTF-8 file {path}: {exc}") from exc
 
