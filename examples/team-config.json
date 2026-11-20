@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "branch": {
+    "pattern": "{type}/{ticket}{slug}"
+  },
+  "commit": {
+    "require_scope": true,
+    "max_subject_length": 72
+  },
+  "templates": {
+    "pr": ".git-flowkit/templates/pr.md"
+  },
+  "release": {
+    "engine": "auto",
+    "pre1_breaking": "minor"
+  }
+}

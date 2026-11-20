@@ -1,0 +1,8 @@
+{
+  "$schema": "./skills/git-flowkit/assets/config.schema.json",
+  "version": 1,
+  "release": {
+    "engine": "release-please",
+    "pre1_breaking": "minor"
+  }
+}
