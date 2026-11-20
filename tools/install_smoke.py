@@ -33,12 +33,22 @@ def smoke(source, temp):
     install = temp / "installation"
     target = temp / "example ทดสอบ"
     home = temp / "home"
-    for directory in (install, target, home):
+    scratch = temp / "tmp"
+    for directory in (install, target, home, scratch):
         directory.mkdir()
-    env = dict(os.environ, HOME=str(home), USERPROFILE=str(home), APPDATA=str(home),
+    # Public-source and local installs only need the system's executable lookup.
+    system_keys = ("PATH", "SYSTEMROOT", "WINDIR", "COMSPEC", "SYSTEMDRIVE", "PATHEXT")
+    env = {key: os.environ[key] for key in system_keys if key in os.environ}
+    user_config, global_config = home / "user.npmrc", home / "global.npmrc"
+    user_config.touch()
+    global_config.touch()
+    env.update(HOME=str(home), USERPROFILE=str(home), APPDATA=str(home),
                LOCALAPPDATA=str(home), XDG_CONFIG_HOME=str(home), CODEX_HOME=str(home / "codex"),
-               npm_config_cache=str(temp / "npm"), DISABLE_TELEMETRY="1", CI="1",
-               GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1", GIT_TERMINAL_PROMPT="0",
+               TEMP=str(scratch), TMP=str(scratch), TMPDIR=str(scratch),
+               NPM_CONFIG_USERCONFIG=str(user_config), NPM_CONFIG_GLOBALCONFIG=str(global_config),
+               NPM_CONFIG_CACHE=str(temp / "npm"), NPM_CONFIG_IGNORE_SCRIPTS="true",
+               DISABLE_TELEMETRY="1", CI="1", GIT_CONFIG_GLOBAL=os.devnull,
+               GIT_CONFIG_NOSYSTEM="1", GIT_TERMINAL_PROMPT="0",
                PYTHONDONTWRITEBYTECODE="1", PYTHONUTF8="1", GIT_FLOWKIT_NO_GLOBAL="1")
 
     def run(*args, cwd=target, offline=False):
