@@ -73,3 +73,6 @@ transaction; an interrupted setup may leave a subset. Re-running init is safe.
 
 Do not use YAML under this filename. Do not enable remote execution through config:
 this CLI has no such setting. Future schema changes require explicit migrations.
+
+When replacing the installed helper, verify this policy against both revisions.
+[Project-local upgrade and rollback](upgrading.md)

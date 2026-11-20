@@ -26,6 +26,9 @@ an npm package published by this project. Check its current Node.js requirements
 For a manual installation, copy the complete `skills/git-flowkit` directory into your
 agent's documented skills directory; do not copy `SKILL.md` alone.
 
+For an existing project-local copy, record its commit before upgrading.
+[Upgrade and rollback instructions](skills/git-flowkit/references/upgrading.md)
+
 Ask your agent:
 
 > Use git-flowkit to inspect this repository, follow its existing rules, and prepare
