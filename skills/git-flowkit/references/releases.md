@@ -105,6 +105,42 @@ diffs. Compare the release PR body with the changelog before approval.
 [Merge commit](https://github.com/whale-devx/git-flowkit-skills/commit/76d1a4a397821da5d71a82280f2113e2c9e60bc2)
 and [implementation commit](https://github.com/whale-devx/git-flowkit-skills/commit/724bb8b0d077142fc22f2274d342656cb50a9bbb).
 
+### Recover a release after an interrupted run
+
+Release Please requests the GitHub Release at the merged release PR's commit before
+posting the PR comment and changing its labels. A later error can leave a published
+release behind. Compare the merged PR, tag and release before retrying. Set `pr` to
+the release PR number and `tag` to its expected tag, then run these read-only checks
+in the repository checkout.
+
+```sh
+gh pr view "$pr" --json mergeCommit,mergedAt,labels,url
+git ls-remote --exit-code origin "refs/tags/$tag" "refs/tags/$tag^{}"
+gh release view "$tag" --json tagName,targetCommitish,isDraft,isPrerelease,url
+```
+
+For an annotated tag, compare the peeled `^{}` commit with the PR's merge commit.
+For a lightweight tag, compare the tag's only SHA. If either read fails, establish
+access and check the exact tag before taking action. If the commits differ, stop
+and investigate with the maintainer.
+
+For a published example, the three reads for upstream Release Please PR #2752
+returned merge commit `712fcf0`, the same commit for the lightweight `v17.6.0`
+tag and release target, and the PR label `autorelease: tagged`.
+[Merged upstream PR](https://github.com/googleapis/release-please/pull/2752) · [Upstream release](https://github.com/googleapis/release-please/releases/tag/v17.6.0)
+
+The pinned v5.0.0 action produced these results against a local GitHub API fixture
+with the repository's `0.1.0` release plan.
+
+| First run | State after the run | What the next run did |
+| --- | --- | --- |
+| Successful run | One release at the merge commit, PR labeled `autorelease: tagged` | Made no release or label requests. |
+| PR comment failed after release creation | One release, PR still labeled `autorelease: pending` | Received a duplicate-release error, switched the PR to `autorelease: tagged` and exited with an error. The following run made no release or label requests. |
+| Adding `autorelease: tagged` failed after removing `autorelease: pending` | One release, PR missing both release labels | Exited successfully without repairing the label. A maintainer can restore it after verifying the release and tag. |
+
+These checks used an isolated service and fixture credentials. A hosted rehearsal
+still requires maintainer approval. [Pinned release action](https://github.com/googleapis/release-please-action/blob/45996ed1f6d02564a971a2fa1b5860e934307cf7/src/index.ts) · [Release Please 17.6.0 implementation](https://github.com/googleapis/release-please/blob/712fcf01effd08d7b0e7b1fd3861f2cb388bc8d1/src/manifest.ts)
+
 ## Token behavior
 
 The default is `GITHUB_TOKEN`. GitHub's current documentation says automation-created

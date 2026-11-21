@@ -113,6 +113,9 @@ The first ordinary release candidate is configured as `0.1.0`. Subsequent
 candidates use the previous release and the project's commit policy.
 It does not publish to npm or PyPI. See the [activation checklist](skills/git-flowkit/references/releases.md).
 
+If the release job fails after creating a release, check the tag's commit and the
+PR labels before retrying. [Release recovery checks](skills/git-flowkit/references/releases.md#recover-a-release-after-an-interrupted-run)
+
 ## Safety and verification
 
 The CLI never commits, pushes, merges, tags, fetches, installs packages, or publishes.

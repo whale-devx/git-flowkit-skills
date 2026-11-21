@@ -63,6 +63,9 @@ Repository Variable `FLOWKIT_RELEASE_ENABLED=true` จึงจะเริ่�
 ยังไม่มีการ Publish npm/PyPI ดูขั้นตอนและข้อจำกัด Token ใน
 [Release guide](skills/git-flowkit/references/releases.md)
 
+ถ้างาน release ล้มเหลวหลังสร้าง GitHub Release ให้เทียบ commit ของ tag กับ commit ที่ merge PR และตรวจ label ก่อนรันซ้ำ
+[วิธีตรวจและกู้สถานะ release](skills/git-flowkit/references/releases.md#recover-a-release-after-an-interrupted-run)
+
 ## ตรวจสอบ
 
 ```bash

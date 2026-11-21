@@ -24,7 +24,7 @@ const lastSha = '2'.repeat(40);
 const feature = 'feat: support team rules';
 const fix = 'fix: retain the selected template';
 const cases = [
-  { name: 'bootstrap feature', previous: null, messages: [feature], native: '0.1.0', preview: '0.1.0' },
+  { name: 'bootstrap feature', previous: null, messages: [feature], native: '0.1.0', preview: '0.1.0', verifyMerge: true },
   { name: 'bootstrap fix', previous: null, messages: [fix], native: '0.1.0', preview: '0.0.1' },
   { name: 'bootstrap docs only', previous: null, messages: ['docs: clarify usage'], native: null, preview: null },
   { name: 'released patch', previous: '0.1.0', messages: [fix], native: '0.1.1', preview: '0.1.1' },
@@ -80,7 +80,11 @@ async function nativePlan(dir, previous, messages, history) {
   assert.ok(!notes.includes('excluded boundary'));
   if (messages.length) assert.ok(notes.includes(messages[0].split(': ')[1]));
   assert.ok(!plan.body.toString().includes('excluded boundary'));
-  return version;
+  return plan;
+}
+
+function versionOf(plan) {
+  return plan ? plan.version.toString() : null;
 }
 
 async function checkSquashBootstrap(tempDir) {
@@ -114,7 +118,7 @@ async function checkSquashBootstrap(tempDir) {
   assert.equal(before, null, 'squashed setup should exclude historical features, got ' + before);
   fs.appendFileSync(path.join(dir, 'project.txt'), 'team rules\n');
   git('commit', '-qam', feature);
-  const after = await nativePlan(dir, null, [feature], commitsOnMain());
+  const after = versionOf(await nativePlan(dir, null, [feature], commitsOnMain()));
   assert.equal(after, '1.0.0');
   console.log('squash setup: native=' + before + ', after feature=' + after);
 }
@@ -139,7 +143,7 @@ async function checkScaffold(tempDir) {
       config.packages['.']['initial-version'] = test.first;
       fs.writeFileSync(path.join(dir, configFile), JSON.stringify(config));
     }
-    const native = await nativePlan(dir, null, [test.message]);
+    const native = versionOf(await nativePlan(dir, null, [test.message]));
     assert.equal(native, test.expected, test.name);
     console.log(test.name + ': native=' + native);
   }
@@ -170,10 +174,15 @@ async function main() {
       fs.writeFileSync(commitsFile, JSON.stringify(test.messages));
       const output = flowkit(fileDir, 'release-preview', '--current', test.previous ?? '0.0.0', '--commits', commitsFile);
       const preview = JSON.parse(output).next;
-      const native = await nativePlan(root, test.previous, test.messages);
+      const plan = await nativePlan(root, test.previous, test.messages);
+      const native = versionOf(plan);
       assert.equal(preview, test.preview, test.name + ': advisory preview');
       assert.equal(native, test.native, test.name + ': native plan');
       console.log(test.name + ': native=' + native + ', advisory=' + preview);
+      if (test.verifyMerge) {
+        const { verifyReleaseCycle } = require('./verify_release_cycle.cjs');
+        await verifyReleaseCycle(readJson(root, configFile), plan);
+      }
     }
   } finally {
     fs.rmSync(fileDir, { recursive: true, force: true });
