@@ -111,6 +111,30 @@ class RepositoryCase(unittest.TestCase):
             with self.subTest(message=message), self.assertRaises(core.FlowkitError):
                 release.parse_commit(message, self.config)
 
+    def test_multiline_breaking_notes_in_commit_file_and_git_history(self):
+        migration = "Replace --out with --output.\n\n  Set the path explicitly.\n  Keep existing files."
+        message = ("fix(cli): change the report option\n\n"
+                   f"BREAKING CHANGE: {migration}\n \nRefs #42\nDo not include this reference detail.\n"
+                   "BREAKING-CHANGE: Change the config key.\nRename it before upgrading.\n"
+                   "Reviewed-by: Example\n")
+        notes = [migration, "Change the config key.\nRename it before upgrading."]
+        path = self.root / "message.txt"
+        path.write_bytes(message.replace("\n", "\r\n").encode("utf-8"))
+        checked = self.cli("check-commit", "--file", str(path))
+        self.assertEqual(checked.returncode, 0, checked.stderr)
+        self.assertEqual(json.loads(checked.stdout)["breaking_notes"], notes)
+        core.git(self.root, "-c", "core.hooksPath=", "commit", "--allow-empty", "-F", str(path))
+        preview = self.cli("release-preview", "--current", "1.2.3", "--since", "HEAD~1")
+        self.assertEqual(preview.returncode, 0, preview.stderr)
+        plan = json.loads(preview.stdout)
+        self.assertEqual(plan["next"], "2.0.0")
+        self.assertEqual(plan["commits"][0]["breaking_notes"], notes)
+
+    def test_breaking_note_keeps_colons_without_a_footer_separator(self):
+        note = "Use the new endpoint.\nhttps://example.invalid/v2\n  Example: keep this indentation."
+        message = f"fix: change endpoint\n\nBREAKING CHANGE: {note}\nSigned-off-by: Example"
+        self.assertEqual(release.parse_commit(message, self.config)["breaking_notes"], [note])
+
     def test_commit_scope_and_subject_policy(self):
         self.config["commit"]["require_scope"] = True
         with self.assertRaises(core.FlowkitError):

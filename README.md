@@ -64,6 +64,10 @@ python skills/git-flowkit/scripts/flowkit.py release-preview --current 1.4.2 --c
 The examples produce `feat/DEV-42-add-team-templates` and an advisory next version of
 `1.5.0`. No branch or release is created. Example PR validation is explicitly **not run**.
 
+For a multiline migration note, use `check-commit --file MESSAGE.txt`.
+`check-commit` and `release-preview` retain the full `BREAKING CHANGE:` note
+in `breaking_notes`, up to the next footer such as `Refs #42`.
+
 For another repository, put `--repo /path/to/repository` **before** the command and
 invoke the script from its actual installation path.
 
