@@ -21,6 +21,10 @@ npx skills add whale-devx/git-flowkit-skills --skill git-flowkit
 เลือก Agent ผ่านตัวติดตั้ง เพิ่ม `-g` เมื่อต้องการติดตั้งระดับผู้ใช้ ส่วน CLI ของ Skills
 เป็นเครื่องมือภายนอก ไม่ใช่ npm package ที่โปรเจกต์นี้เผยแพร่
 
+ถ้าติดตั้งแบบสำเนาไว้ในโปรเจกต์แล้ว ให้บันทึก commit เดิมจาก `skills-lock.json`
+ก่อนอัปเกรด เพื่อย้อนกลับได้โดยใช้ค่า config และเทมเพลตของทีม
+[วิธีอัปเกรดและย้อนกลับ (ภาษาอังกฤษ)](skills/git-flowkit/references/upgrading.md)
+
 ตัวอย่างคำสั่งให้ Agent:
 
 > ใช้ git-flowkit ตรวจ Repository นี้ อ่านกฎเดิม แล้วเตรียมชื่อ Branch, Commit,

@@ -56,6 +56,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - run: python tools/install_smoke.py main
       - run: python tools/install_smoke.py candidate
+      - run: python tools/upgrade_smoke.py
   release:
     needs: [tests, policy, installation]
     if: >-
