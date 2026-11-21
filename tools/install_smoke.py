@@ -142,8 +142,14 @@ def smoke(source, temp):
     print(f"{source} {revision}: installed helper journey passed")
 
 
-if __name__ == "__main__":
+def main():
+    # Installer output and local paths may contain characters outside the console encoding.
+    sys.stdout.reconfigure(errors="backslashreplace")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("source", choices=("main", "candidate"))
     with tempfile.TemporaryDirectory() as directory:
         smoke(parser.parse_args().source, Path(directory))
+
+
+if __name__ == "__main__":
+    main()

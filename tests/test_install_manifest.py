@@ -1,13 +1,28 @@
+import io
 import os
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
-from tools.install_smoke import check_installed_paths, smoke
+from tools.install_smoke import check_installed_paths, main, smoke
 
 
 class InstalledManifestTests(unittest.TestCase):
+    def test_installer_log_respects_the_output_encoding(self):
+        line = "│ café — ทดสอบ"
+        for encoding in ("cp1252", "utf-8"):
+            with self.subTest(encoding=encoding):
+                data = io.BytesIO()
+                with io.TextIOWrapper(data, encoding=encoding, errors="strict", newline="\n") as output:
+                    with redirect_stdout(output), patch("sys.argv", ["install_smoke.py", "candidate"]), patch(
+                        "tools.install_smoke.smoke", side_effect=lambda source, temp: print(line)
+                    ):
+                        main()
+                    output.flush()
+                    self.assertEqual(data.getvalue(), (line + "\n").encode(encoding, errors="backslashreplace"))
+
     def test_install_journeys_start_with_an_isolated_environment(self):
         inherited = {"PATH": "fixture-bin", "FLOWKIT_TEST_MARKER": "parent-only",
                      "NODE_OPTIONS": "parent-option", "npm_config_userconfig": "parent-config"}
