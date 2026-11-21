@@ -151,6 +151,38 @@ class RepositoryCase(unittest.TestCase):
         with self.assertRaises(core.FlowkitError):
             core.template_path(self.root, "pr", [])
 
+    def test_github_templates_in_each_location_reach_doctor_and_render(self):
+        data = self.write("data.json", "{}")
+        content = "## Summary\n\n## Validation\n"
+        self.write("examples/PULL_REQUEST_TEMPLATE/example.md", "outside the supported locations")
+        self.write("docs/PULL_REQUEST_TEMPLATE/notes.json", "{}")
+        self.write("docs/PULL_REQUEST_TEMPLATE/nested/deeper.md", "nested example")
+        for location in ("PULL_REQUEST_TEMPLATE/change.md", "docs/PULL_REQUEST_TEMPLATE/change.txt",
+                         ".github/Pull_Request_Template.TxT", "Pull_Request_Template.Md",
+                         ".github/Pull_Request_Template/Change.MD"):
+            with self.subTest(location=location):
+                template = self.write(location, content)
+                try:
+                    diagnosis = self.cli("doctor")
+                    self.assertEqual(diagnosis.returncode, 0, diagnosis.stderr)
+                    self.assertEqual(Path(json.loads(diagnosis.stdout)["templates"]["pr"]), template)
+                    rendered = self.cli("render", "pr", "--data", str(data))
+                    self.assertEqual(rendered.returncode, 0, rendered.stderr)
+                    self.assertEqual(rendered.stdout, content)
+                finally:
+                    template.unlink()
+
+    def test_templates_across_locations_require_a_choice(self):
+        self.write(".github/pull_request_template.md", "default\n")
+        selected = self.write("docs/PULL_REQUEST_TEMPLATE/feature.txt", "feature\n")
+        data = self.write("data.json", "{}")
+        ambiguous = self.cli("render", "pr", "--data", str(data))
+        self.assertEqual(ambiguous.returncode, 2)
+        self.assertIn("Multiple native templates", ambiguous.stderr)
+        explicit = self.cli("render", "pr", "--data", str(data), "--template", selected.relative_to(self.root).as_posix())
+        self.assertEqual(explicit.returncode, 0, explicit.stderr)
+        self.assertEqual(explicit.stdout, "feature\n")
+
     def test_paths_cannot_escape(self):
         for value in ("../secret", ".git/config", "a/../../secret", "a\\secret", str(self.root / "absolute")):
             with self.subTest(value=value), self.assertRaises(core.FlowkitError):

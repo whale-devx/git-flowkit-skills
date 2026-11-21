@@ -49,6 +49,11 @@ python skills/git-flowkit/scripts/flowkit.py validate
 `init` แสดง Preview ส่วน `--apply` สร้างเฉพาะไฟล์ที่ยังไม่มี จากนั้นเลือกไฟล์ Template
 ใน `templates` ของ Config เมื่อคุณต้องการใช้แทน Template เดิมของ Repository
 
+สำหรับ PR บน GitHub ตัวช่วยค้นหาไฟล์ `pull_request_template.md` หรือ `.txt`
+ที่รากของรีโป ใน `.github/` และใน `docs/` รวมถึงไฟล์ Markdown และไฟล์ข้อความที่อยู่โดยตรง
+ในโฟลเดอร์ `PULL_REQUEST_TEMPLATE/` ของแต่ละตำแหน่ง ชื่อไฟล์ใช้ตัวพิมพ์เล็กหรือใหญ่ได้
+เมื่อพบหลายเทมเพลต ให้ระบุพาธจากรากรีโปด้วย `render pr --template`
+
 ## Automatic Semantic Versioning
 
 Release Please เป็นเจ้าของเวอร์ชันจริง ตัว CLI ทำเพียง Preview พร้อมเหตุผลจาก Commit
