@@ -91,7 +91,8 @@ def setup_release(root: Path, args: argparse.Namespace, config: dict) -> list[di
     return scaffold(root, {"release-please-config.json": json_text(native),
                            ".release-please-manifest.json": json_text({".": args.initial_version}),
                            "version.txt": args.initial_version + "\n",
-                           "CHANGELOG.md": "# Changelog\n\nChanges are maintained by Release Please.\n",
+                           "CHANGELOG.md": ("# Changelog\n\n## [Release configuration](release-please-config.json)\n\n"
+                                            "Release Please maintains the versioned entries in this file.\n"),
                            ".github/workflows/git-flowkit-release.yml": workflow}, args.apply)
 
 

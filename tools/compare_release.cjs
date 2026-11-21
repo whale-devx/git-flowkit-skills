@@ -73,6 +73,9 @@ async function nativePlan(dir, previous, messages, history) {
   const manifestContent = updates.get(manifestFile).updateContent(JSON.stringify(initialManifest));
   assert.equal(JSON.parse(manifestContent)['.'], version);
   const notes = updates.get('CHANGELOG.md').updateContent(fs.readFileSync(path.join(dir, 'CHANGELOG.md'), 'utf8'));
+  const headings = notes.split(/\r?\n/).filter(line => /^#{1,6} Changelog$/i.test(line));
+  assert.deepEqual(headings, ['# Changelog'], 'first native update must retain one changelog title');
+  assert.ok(!notes.includes('No version has been published yet'), 'release notes must remain true after publication');
   assert.ok(notes.includes(version));
   assert.ok(!notes.includes('excluded boundary'));
   if (messages.length) assert.ok(notes.includes(messages[0].split(': ')[1]));

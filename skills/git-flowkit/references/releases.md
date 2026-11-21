@@ -66,10 +66,7 @@ A docs-only fixture produced no candidate. After an existing `0.1.0` release,
 a fix proposed `0.1.1`. The advisory helper still computes from its supplied
 baseline, so a fix against `0.0.0` yields `0.0.1` in the helper.
 
-1. PR #1 merged with a merge commit. After bootstrap `c35420a`, the retained non-merge
-   commits include feature `724bb8b` and fix `2a252fa`. Inspect the native release PR
-   against this history before approving a version. The native fixture uses
-   simulated GitHub history. A hosted release rehearsal remains outstanding.
+1. Check the native release plan against the current branch history using the dry runs below.
 2. Verify the six OS/Python test jobs, installation job and policy job. Configure required checks and
    review protection on the default branch; these settings are not changed by this PR.
 3. Permit Actions to create pull requests where repository/organization policy requires it.
@@ -81,6 +78,32 @@ baseline, so a fix against `0.0.0` yields `0.0.1` in the helper.
 
 The workflow uses pinned action commit SHAs and a separate narrowly-permissioned release
 job. Fork PR code has no access to that job. There is no auto-merge or review bypass.
+
+### Preview the first release against repository history
+
+With Release Please 17.6.0 and a credential that can read the repository,
+run both dry runs against the branch under review. Replace the token file
+path with an existing local credential file.
+
+```sh
+release-please release-pr --repo-url whale-devx/git-flowkit-skills --target-branch main --token /path/to/read-token --dry-run --trace
+release-please github-release --repo-url whale-devx/git-flowkit-skills --target-branch main --token /path/to/read-token --dry-run
+```
+
+On 2026-11-21 the planner read 15 commits after bootstrap on
+[`a15e6e0`](https://github.com/whale-devx/git-flowkit-skills/commit/a15e6e024d39c93592f655d5a903c15342d5c45f).
+The live configuration proposed `1.0.0`. Replaying the same GitHub responses
+with only the proposed first-version setting yielded `0.1.0`. Both plans
+updated the changelog, version file and manifest. The tag dry run found
+zero releases eligible for publication.
+
+Review the entries as well as the version. The first plan listed the same
+foundation feature under its merge commit `76d1a4a` and implementation
+commit `724bb8b`. When reviewing the generated release PR, keep one entry
+for that feature and check the overlapping template fixes against their
+diffs. Compare the release PR body with the changelog before approval.
+[Merge commit](https://github.com/whale-devx/git-flowkit-skills/commit/76d1a4a397821da5d71a82280f2113e2c9e60bc2)
+and [implementation commit](https://github.com/whale-devx/git-flowkit-skills/commit/724bb8b0d077142fc22f2274d342656cb50a9bbb).
 
 ## Token behavior
 
