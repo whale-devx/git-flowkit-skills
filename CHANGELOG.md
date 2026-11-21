@@ -1,6 +1,5 @@
 # Changelog
 
-## Unreleased
+## [Release configuration](release-please-config.json)
 
-Initial implementation. No version has been published yet. Release Please will
-maintain versioned entries after the release workflow is explicitly enabled.
+Release Please updates this file, the version file and the release manifest together.
