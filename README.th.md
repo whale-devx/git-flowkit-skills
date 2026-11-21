@@ -40,6 +40,10 @@ Templates ตามลำดับความสำคัญ, สร้าง C
 ผู้ใช้แก้ไฟล์ JSON และ Markdown ได้เองทั้งหมด ทั้งระดับ Repository และ Global
 ไฟล์ Config ที่ใช้จริงคือ `.git-flowkit.json` ไม่ใช่ YAML ที่เคยเสนอในช่วงออกแบบ
 
+ถ้าคำแนะนำการย้ายเวอร์ชันมีหลายบรรทัด ให้ใช้ `check-commit --file MESSAGE.txt`
+ทั้ง `check-commit` และ `release-preview` จะเก็บข้อความ `BREAKING CHANGE:`
+ครบทุกบรรทัดใน `breaking_notes` จนถึง footer ถัดไป เช่น `Refs #42`
+
 ```bash
 python skills/git-flowkit/scripts/flowkit.py init
 python skills/git-flowkit/scripts/flowkit.py init --apply

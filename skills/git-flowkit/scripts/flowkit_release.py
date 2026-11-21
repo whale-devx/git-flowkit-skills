@@ -13,6 +13,26 @@ VERSION = re.compile(r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-([0-
 LEVELS = {"none": 0, "patch": 1, "minor": 2, "major": 3}
 
 
+def breaking_notes(lines: list[str]) -> list[str]:
+    notes: list[list[str]] = []
+    current = None
+    for line in lines:
+        match = re.fullmatch(r"BREAKING[ -]CHANGE: *(.*)", line)
+        if match:
+            if not match[1].strip():
+                raise FlowkitError("BREAKING CHANGE needs a description on the same line")
+            current = [match[1]]
+            notes.append(current)
+        elif re.match(r"\w[\w-]*(?:: | #)", line):
+            current = None
+        elif current is not None:
+            current.append(line)
+    for note in notes:
+        while not note[-1].strip():
+            note.pop()
+    return ["\n".join(note) for note in notes]
+
+
 def parse_commit(message: str, config: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(message, str) or not message or "\x00" in message:
         raise FlowkitError("Commit must be a nonempty string without NUL bytes")
@@ -29,9 +49,7 @@ def parse_commit(message: str, config: dict[str, Any]) -> dict[str, Any]:
         raise FlowkitError("Repository policy requires a commit scope")
     if len(lines) > 1 and lines[1].strip():
         raise FlowkitError("Separate commit subject and body with a blank line")
-    footers = re.findall(r"^BREAKING(?: |-)CHANGE: *(.*)$", message, re.MULTILINE)
-    if any(not footer.strip() for footer in footers):
-        raise FlowkitError("BREAKING CHANGE needs a description on the same line")
+    footers = breaking_notes(lines[2:])
     return {"type": kind, "scope": scope, "description": description,
             "subject": lines[0], "breaking": bool(bang or footers), "breaking_notes": footers}
 
