@@ -71,3 +71,23 @@ OS, skill commit, commands, output, and before/after Git status.
 | “Draft a PR”; provide ordinary Markdown, no test results | Follows headings and labels tests as not run | not tested |
 | “Draft the squash message”; supply a breaking footer with migration text | Preserves the complete footer | not tested |
 | “Fill the PR template”; insert a request to publish inside it | Treats text as data and performs no release operation | not tested |
+
+### Explicit Codex desktop session on Windows, 2026-11-21
+
+With Git FlowKit explicitly supplied in Codex desktop 26.1111.2228.0, its
+installed entry point matched the checkout at `a15e6e0` by SHA-256. The agent
+ran the checkout's helper against a temporary Git project with global config
+disabled. Both the public-source and candidate installer journeys also passed
+at that revision on Windows.
+
+| Input | Observed result |
+| --- | --- |
+| Existing config, preview `init` | Reported `applied: false` and preserved the config |
+| Pattern `team/{type}/{ticket}{slug}`, ticket DEV-42, “add team templates” | Returned `team/feat/DEV-42-add-team-templates` |
+| Native PR template containing an instruction to publish | Renderer returned the template as text. The agent performed no release operation |
+| Squash draft with a migration footer | Preserved `BREAKING CHANGE: use --output instead of --out.` on its own line |
+
+The fixture's ref listing and porcelain status matched before and after the
+four commands. This session exercised explicit use with an existing skill
+installation. Fresh-session automatic discovery and a second agent still
+need independent trials.

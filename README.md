@@ -144,4 +144,5 @@ From a Git checkout, reproduce the project-local install and helper journey with
 for the public source. Both need npm registry access, Node.js with npx, Python and Git.
 The main check also needs GitHub access and the main commit in the checkout.
 Each run creates a disposable project and prints the revision and installed path.
+When a Windows log uses a legacy encoding, characters it cannot represent appear as Unicode escapes.
 If the installer fails, inspect its output and rerun after connectivity returns.

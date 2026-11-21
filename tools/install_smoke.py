@@ -18,16 +18,37 @@ def require(condition, message):
         raise RuntimeError(message)
 
 
+def check_installed_paths(skill, expected):
+    actual = set()
+    for path in skill.rglob("*"):
+        relative = path.relative_to(skill).as_posix()
+        require(not path.is_symlink() and path.resolve().is_relative_to(skill.resolve()),
+                f"Expected a copied package entry: {relative}")
+        if path.is_file():
+            actual.add(relative)
+    require(actual == expected, f"Installed file set differs: {sorted(actual ^ expected)}")
+
+
 def smoke(source, temp):
     install = temp / "installation"
     target = temp / "example ทดสอบ"
     home = temp / "home"
-    for directory in (install, target, home):
+    scratch = temp / "tmp"
+    for directory in (install, target, home, scratch):
         directory.mkdir()
-    env = dict(os.environ, HOME=str(home), USERPROFILE=str(home), APPDATA=str(home),
+    # Public-source and local installs only need the system's executable lookup.
+    system_keys = ("PATH", "SYSTEMROOT", "WINDIR", "COMSPEC", "SYSTEMDRIVE", "PATHEXT")
+    env = {key: os.environ[key] for key in system_keys if key in os.environ}
+    user_config, global_config = home / "user.npmrc", home / "global.npmrc"
+    user_config.touch()
+    global_config.touch()
+    env.update(HOME=str(home), USERPROFILE=str(home), APPDATA=str(home),
                LOCALAPPDATA=str(home), XDG_CONFIG_HOME=str(home), CODEX_HOME=str(home / "codex"),
-               npm_config_cache=str(temp / "npm"), DISABLE_TELEMETRY="1", CI="1",
-               GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1", GIT_TERMINAL_PROMPT="0",
+               TEMP=str(scratch), TMP=str(scratch), TMPDIR=str(scratch),
+               NPM_CONFIG_USERCONFIG=str(user_config), NPM_CONFIG_GLOBALCONFIG=str(global_config),
+               NPM_CONFIG_CACHE=str(temp / "npm"), NPM_CONFIG_IGNORE_SCRIPTS="true",
+               DISABLE_TELEMETRY="1", CI="1", GIT_CONFIG_GLOBAL=os.devnull,
+               GIT_CONFIG_NOSYSTEM="1", GIT_TERMINAL_PROMPT="0",
                PYTHONDONTWRITEBYTECODE="1", PYTHONUTF8="1", GIT_FLOWKIT_NO_GLOBAL="1")
 
     def run(*args, cwd=target, offline=False):
@@ -53,6 +74,9 @@ def smoke(source, temp):
     skill = skill_file.parent
     require(skill.resolve().is_relative_to(install), "Expected a project-local install")
     listing = run("git", "ls-tree", "-r", revision, "skills/git-flowkit", cwd=ROOT)
+    expected_paths = {item.split("\t", 1)[1].removeprefix("skills/git-flowkit/")
+                      for item in listing.splitlines()}
+    check_installed_paths(skill, expected_paths)
     for item in listing.splitlines():
         metadata, name = item.split("\t", 1)
         installed = skill / Path(name).relative_to("skills/git-flowkit")
@@ -118,8 +142,14 @@ def smoke(source, temp):
     print(f"{source} {revision}: installed helper journey passed")
 
 
-if __name__ == "__main__":
+def main():
+    # Installer output and local paths may contain characters outside the console encoding.
+    sys.stdout.reconfigure(errors="backslashreplace")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("source", choices=("main", "candidate"))
     with tempfile.TemporaryDirectory() as directory:
         smoke(parser.parse_args().source, Path(directory))
+
+
+if __name__ == "__main__":
+    main()
